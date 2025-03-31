@@ -1,0 +1,25 @@
+analyze_pdf_task:
+  description: >
+    1. Read the content of the PDF file located at '{pdf_path}' using the PDF Content Reader Tool.
+    2. Carefully analyze the extracted text and the user's modification request: '{user_request}'.
+    3. Identify the specific text segments within the PDF that need to be changed based on the user's request. Note the page number if possible.
+    4. Generate precise, step-by-step instructions for the PDF Modifier agent. These instructions MUST clearly state the exact text to find and the exact text to replace it with.
+       Format the instructions clearly, for example: "Replace 'Original Text Snippet' with 'New Text Snippet' on page X." or simply "Replace 'Text A' with 'Text B'".
+       If multiple changes are needed, list each replacement instruction separately.
+  expected_output: >
+    A string containing the precise modification instructions for the PDF Modifier agent.
+    Example: "Replace 'John Doe' with 'Jane Smith'. Replace 'Status: Pending' with 'Status: Approved'."
+  agent: pdf_analyzer # Corresponds to the agent defined in crew.py
+
+modify_pdf_task:
+  description: >
+    1. Use the modification instructions received from the analyze_pdf_task context.
+    2. Use the PDF Modify and Save Tool to apply these changes to the PDF.
+    3. The original PDF is located at '{pdf_path}'.
+    4. Save the modified PDF to the specified output path: '{output_path}'. Ensure you pass this exact path to the tool's 'output_pdf_path' argument.
+  expected_output: >
+    A confirmation message stating that the PDF modification process completed and the file saved to the specified output path.
+    Example: "PDF potentially modified and saved to /path/to/modified_output.pdf. Replacements attempted: {'Old Text': 'New Text'}. Note: Format preservation is limited with this method."
+  agent: pdf_modifier # Corresponds to the agent defined in crew.py
+  context: # Specifies that this task depends on the output of analyze_pdf_task
+    - analyze_pdf_task
